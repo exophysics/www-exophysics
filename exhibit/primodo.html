@@ -70,11 +70,6 @@
             const float distanceCutoff = 0.000001;
             const bool cyclicalGeometry = true; // Wrap around x- and y-coordinates on the edges?
 
-            const float attractionAngle = 0.0; // Rotate the attraction vector. In degrees.
-            const mat2 attractionRotationMatrix = mat2(
-                cos(attractionAngle / 360.0 * PI), sin(attractionAngle / 360.0 * PI),
-                -sin(attractionAngle / 360.0 * PI), cos(attractionAngle / 360.0 * PI));
-
             // Derived particle properties, based on flavor
             const vec3 colors[] = vec3[](
                 vec3(0.0, 0.7, 0.0),
@@ -141,7 +136,7 @@
                 /* state.x = X-coordinate
                  * state.y = Y-coordinate
                  * state.z = rotation (between 0 and 2*PI)
-                 * state.w = unused
+                 * state.w = a cache for the color index
                  * velocity.xyzw = unused
                  */
 
