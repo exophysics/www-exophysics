@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>Primodo - Exophysics</title>
+        <title>Mordial - Exophysics</title>
         <meta charset="utf-8">
     </head>
     <!--
@@ -67,6 +67,9 @@
             const float visionRadius = 0.10;
             const float constantRotation = PI;
             const float attractionRotation = PI / 360.0 * 36.0;
+            const float pointerRadius = 0.30;
+            const float pointerPullFactor = 0.01;
+            const float frictionFactor = 0.90;
             const float distanceCutoff = 0.000001;
             const bool cyclicalGeometry = true; // Wrap around x- and y-coordinates on the edges?
 
@@ -77,9 +80,9 @@
                 vec3(0.0, 1.0, 1.0),
                 vec3(1.0, 0.8, 0.0),
                 vec3(0.0, 0.0, 1.0),
-                vec3(1.0, 0.0, 0.0),
-                vec3(0.5, 0.5, 0.5),
                 vec3(1.0, 1.0, 1.0),
+                vec3(0.5, 0.5, 0.5),
+                vec3(1.0, 0.0, 0.0),
                 vec3(0.5, 0.0, 1.0)
             );
 
@@ -137,7 +140,7 @@
                  * state.y = Y-coordinate
                  * state.z = rotation (between 0 and 2*PI)
                  * state.w = a cache for the color index
-                 * velocity.xyzw = unused
+                 * velocity.xyzw = ONLY used for moving particles towards the mouse pointer
                  */
 
                 state = oldState;
@@ -162,6 +165,9 @@
 
                 // Has the user paused the simulation?
                 if (userInput.w == 1.0) { return; }
+
+                // Apply velocity (only used for moving particles towards mouse pointer)
+                state.xy += velocity.xy;
 
                 // Turn direction, based on neighbours
                 int neighbors_left = 0;
@@ -192,8 +198,16 @@
                     state.w = 1.0;
                 else if (total_neighbors < 50)
                     state.w = 2.0;
-                else
+                else if (total_neighbors < 85)
                     state.w = 3.0;
+                else if (total_neighbors < 110)
+                    state.w = 4.0;
+                else if (total_neighbors < 140)
+                    state.w = 5.0;
+                else if (total_neighbors < 300)
+                    state.w = 6.0;
+                else
+                    state.w = 7.0;
                 color.rgb = colors[int(state.w)];
 
                 // Movement
@@ -225,8 +239,16 @@
 
                 // Movement towards the mouse pointer
                 if (userInput.b == 1.0) {
-                    // not implemented
+                    vec2 dist = getDistance(state.xy, userInput.xy) / pointerRadius;
+                    if (length(dist) <= 1.0) {
+                        if (pointerPullFactor != 0.0) {
+                            velocity.xy += pointerPullFactor * dist * length(dist);
+                        }
+                    }
                 }
+
+                // Friction
+                velocity.xy *= frictionFactor;
             }
         </script>
         <script type="application/javascript" id="boilerplate">
